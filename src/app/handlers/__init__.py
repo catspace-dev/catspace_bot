@@ -26,7 +26,9 @@ def prepare_router() -> Router:
     # general
     router.message.register(on_me_command, Command("me"))
     router.message.register(on_toxicity_command, Command("toxics"))
-    router.message.register(process_toxic_classification)
     router.message.register(on_polls_command, Command("polls"))
     router.message.middleware(app_exception_middleware)
+
+    # process last messages
+    router.message.register(process_toxic_classification)
     return router
