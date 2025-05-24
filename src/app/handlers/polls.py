@@ -1,17 +1,20 @@
 from aiogram.types import Message
 
-from app.features.polls import create_poll, get_poll_list, remove_poll
+from app.features.polls import create_poll, get_poll_list, remove_poll, add_poll_variant
 from app.infrastructure.container import AppContainer
-from app.infrastructure.dto.poll import CreatePollDTO, DeletePollDTO
+from app.infrastructure.dto.poll import CreatePollDTO, DeletePollDTO, AddPollVariantDTO
 
 
 async def on_polls_command(msg: Message, container: AppContainer) -> None:
     parts = msg.text.split(" ")
-    if len(parts) > 1: action = parts[1]
+    if len(parts) < 1:
+        return
+    action = parts[1]
     match action:
         case "create": await on_poll_create_command(msg, container)
         case "list": await on_poll_list_command(msg, container)
         case "remove": await on_poll_delete_command(msg, container)
+        case "variants": await on_poll_variants_command(msg, container)
 
 async def on_poll_create_command(msg: Message, container: AppContainer) -> None:
     try:
@@ -46,3 +49,42 @@ async def on_poll_delete_command(msg: Message, container: AppContainer) -> None:
         chat_id=msg.chat.id
     ), container.dao.polls)
     await msg.reply(result)
+
+
+async def on_poll_variants_command(msg: Message, container: AppContainer) -> None:
+    parts = msg.text.split(" ")
+    if len(parts) == 2:
+        await msg.reply("Список: add, list, remove")
+        return
+    action = parts[2]
+    match action:
+        case "add": await on_poll_variants_add(msg, container)
+        case "list": print("listing todo")
+        case "remove": print("removing todo")
+
+async def on_poll_variants_add(msg: Message, container: AppContainer) -> None:
+    try:
+        _, _, _, poll_id = msg.text.split(" ", 3)
+    except ValueError:
+        await msg.reply("Использование: /poll variants add `<poll_id>`", parse_mode="Markdown")
+        return
+
+    if not msg.reply_to_message:
+        await msg.reply(
+            "Используйте эту команду как ответ на сообщение, которое вы хотите добавить в опрос."
+        )
+        return
+
+    dto = AddPollVariantDTO(
+        poll_id=poll_id,
+        user_id=msg.from_user.id,
+        chat_id=msg.chat.id,
+        message_id=msg.reply_to_message.message_id,
+        text=msg.reply_to_message.text or msg.reply_to_message.caption
+    )
+
+    await add_poll_variant(dto, container.dao.polls, container.dao.poll_variants)
+    await msg.reply("Вариант добавлен!")
+    return
+
+

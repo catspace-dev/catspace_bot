@@ -26,6 +26,7 @@ steps = [
             user_id INTEGER NOT NULL,
             chat_id INTEGER NOT NULL,
             message_id INTEGER NOT NULL,
+            text VARCHAR(256) NOT NULL,
             FOREIGN KEY (poll_id) REFERENCES polls (id) ON DELETE CASCADE
         )
         """,

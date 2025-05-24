@@ -1,4 +1,5 @@
 from app.infrastructure.dao.polls.poll import PollDAO
+from app.infrastructure.dao.polls.poll_variant import PollVariantDAO
 from app.infrastructure.dto.poll import (
     CreatePollDTO,
     DeletePollDTO,
@@ -40,3 +41,8 @@ async def remove_poll(dto: DeletePollDTO, dao: PollDAO) -> str:
     await dao.delete(filter_dto)
     await dao.db.connection.commit()
     return "Опрос удалён!"
+
+async def add_poll_variant(dto: AddPollVariantDTO, poll_dao: PollDAO, poll_variant_dao: PollVariantDAO) -> None:
+    await get_poll(PollFilterDTO(poll_id=dto.poll_id, chat_id=dto.chat_id), poll_dao)
+    await poll_variant_dao.add(dto)
+    await poll_variant_dao.db.connection.commit()
