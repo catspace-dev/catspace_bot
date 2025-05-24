@@ -123,6 +123,7 @@ async def on_poll_variant_remove(msg: Message, container: AppContainer) -> None:
         return
 
     await msg.reply(await remove_poll_variant(
+        issuer_id=msg.from_user.id,
         dto=PollVariantFilterDTO(variant_id=variant_id, chat_id=msg.chat.id, poll_id=poll_id),
         poll_dao=container.dao.polls,
         poll_variant_dao=container.dao.poll_variants

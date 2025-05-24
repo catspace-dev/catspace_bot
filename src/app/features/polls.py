@@ -13,7 +13,9 @@ from app.infrastructure.exceptions.polls import (
     PollDoesNotExist,
     YouCantDeletePollWhichNotBelongToYou,
     PollVariantDoesNotExist,
+    YouCantDeletePollVariantWhichNotBelongToYou,
 )
+from app.settings import ADMINS
 
 
 async def create_poll(dto: CreatePollDTO, dao: PollDAO) -> None:
@@ -39,7 +41,7 @@ async def get_poll(dto: PollFilterDTO, dao: PollDAO) -> PollDTO | None:
 async def remove_poll(dto: DeletePollDTO, dao: PollDAO) -> str:
     filter_dto = PollFilterDTO(poll_id=dto.poll_id, chat_id=dto.chat_id)
     poll = await get_poll(filter_dto, dao)
-    if poll.creator_user_id != dto.issuer_id:
+    if not (poll.creator_user_id == dto.issuer_id or dto.issuer_id not in ADMINS):
         raise YouCantDeletePollWhichNotBelongToYou()
     await dao.delete(filter_dto)
     await dao.db.connection.commit()
@@ -67,12 +69,15 @@ async def get_poll_variant(dto: PollVariantFilterDTO, dao: PollVariantDAO) -> Po
     return variant
 
 async def remove_poll_variant(
+    issuer_id: int,
     dto: PollVariantFilterDTO,
     poll_dao: PollDAO,
     poll_variant_dao: PollVariantDAO
 ) -> str:
     poll = await get_poll(dto=dto.to_poll_filter(), dao=poll_dao)
     variant = await get_poll_variant(dto=dto, dao=poll_variant_dao)
+    if not (variant.user_id == issuer_id or issuer_id in ADMINS):
+        raise YouCantDeletePollVariantWhichNotBelongToYou()
     await poll_variant_dao.delete(variant.id)
     await poll_variant_dao.db.connection.commit()
     return f"Вариант {variant.to_link()} в опросе {poll.name} удалён."
