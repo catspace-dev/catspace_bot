@@ -15,6 +15,7 @@ class ChatWhitelistMiddleware(BaseMiddleware):
         data: dict[str, Any],
     ) -> Any:
         event_chat: Chat = data.get("event_chat")
-        if event_chat.id not in self.allowed_chat_ids:
-            return
-        return await handler(event, data)
+        if event_chat:
+            if event_chat.id not in self.allowed_chat_ids:
+                return
+            return await handler(event, data)
