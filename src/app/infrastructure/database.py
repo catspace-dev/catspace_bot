@@ -9,6 +9,7 @@ class DatabaseWrapper:
     @classmethod
     async def create(cls, path: str) -> "DatabaseWrapper":
         connection = await aiosqlite.connect(path)
+        connection.row_factory = aiosqlite.Row
         # await connection.execute("PRAGMA foreign_keys=ON") - ну потом включу, как бд буду переделывать
         return cls(connection)
 

@@ -2,6 +2,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 from transformers import BertTokenizer, BertForSequenceClassification
 
+from app.infrastructure.dao.polls.poll import PollDAO
+from app.infrastructure.dao.polls.poll_variant import PollVariantDAO
 from app.infrastructure.dao.toxicity import ToxicityDAO
 from app.infrastructure.dao.user import UserDAO
 from app.infrastructure.database import DatabaseWrapper
@@ -39,6 +41,8 @@ class DAOContainer:
         self._db = db
         self.toxicity = ToxicityDAO(self._db)
         self.users = UserDAO(self._db)
+        self.polls = PollDAO(self._db)
+        self.poll_variants = PollVariantDAO(self._db)
 
     async def finalize(self):
         await self._db.close()
