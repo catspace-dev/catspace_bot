@@ -7,10 +7,10 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from app.handlers import prepare_router
-from app.infrastructure.container import ToxicContainer, AppContainer
-from app.infrastructure.database import DatabaseWrapper
-from app.infrastructure.user import UserMiddleware
-from app.settings import TELEGRAM_BOT_TOKEN
+from app.infrastructure.container import AppContainer
+from app.infrastructure.middleware.chat import ChatWhitelistMiddleware
+from app.infrastructure.middleware.user import UserMiddleware
+from app.settings import TELEGRAM_BOT_TOKEN, ALLOWED_CHATS
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 async def on_startup(dispatcher: Dispatcher) -> None:
     logger.info("Setup middlewares")
     dispatcher.update.middleware(UserMiddleware())
+    dispatcher.update.middleware(ChatWhitelistMiddleware(allowed_chat_ids=ALLOWED_CHATS))
     dispatcher.include_router(prepare_router())
 
 
