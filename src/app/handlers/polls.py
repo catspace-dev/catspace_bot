@@ -66,6 +66,7 @@ async def on_poll_post_command(msg: Message, container: AppContainer) -> None:
         return
 
     await post_poll(
+        issuer=msg.from_user.id,
         dto=PollFilterDTO(poll_id=poll_id, chat_id=msg.chat.id),
         poll_dao=container.dao.polls,
         poll_variant_dao=container.dao.poll_variants,

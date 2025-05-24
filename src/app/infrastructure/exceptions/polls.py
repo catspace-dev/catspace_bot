@@ -16,3 +16,8 @@ class PollVariantDoesNotExist(AppException):
 class YouCantDeletePollVariantWhichNotBelongToYou(AppException):
     def __init__(self):
         super().__init__("Вы не можете удалить вариант опроса который вам не принадлежит.")
+
+
+class YouShallBePollCreator(AppException):
+    def __init__(self):
+        super().__init__("Вы должны быть создателем опроса.")

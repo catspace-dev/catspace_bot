@@ -17,6 +17,7 @@ from app.infrastructure.exceptions.polls import (
     YouCantDeletePollWhichNotBelongToYou,
     PollVariantDoesNotExist,
     YouCantDeletePollVariantWhichNotBelongToYou,
+    YouShallBePollCreator,
 )
 from app.settings import ADMINS
 
@@ -85,7 +86,7 @@ async def remove_poll_variant(
     await poll_variant_dao.db.connection.commit()
     return f"Вариант {variant.to_html_link()} в опросе {poll.name} удалён."
 
-async def post_poll(dto: PollFilterDTO, poll_dao: PollDAO, poll_variant_dao: PollVariantDAO, bot: Bot):
+async def post_poll(issuer: int, dto: PollFilterDTO, poll_dao: PollDAO, poll_variant_dao: PollVariantDAO, bot: Bot):
     poll = await get_poll(dto=dto, dao=poll_dao)
     variants = await poll_variant_dao.list(chat_id=dto.chat_id, poll_id=poll.id)
 
@@ -95,6 +96,8 @@ async def post_poll(dto: PollFilterDTO, poll_dao: PollDAO, poll_variant_dao: Pol
             for variant in variants
         ]
     )
+    if not (issuer == poll.creator_user_id or issuer in ADMINS):
+        raise YouShallBePollCreator()
 
     await bot.send_poll(
         chat_id=poll.chat_id,
