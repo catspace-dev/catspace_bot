@@ -133,12 +133,18 @@ async def on_poll_variants_add(msg: Message, container: AppContainer) -> None:
         )
         return
 
+    text = msg.reply_to_message.text or msg.reply_to_message.caption
+
+    if not text:
+        await msg.reply("У сообщения обязательно должен быть текст или подпись!")
+        return
+
     dto = AddPollVariantDTO(
         poll_id=poll_id,
         user_id=msg.from_user.id,
         chat_id=msg.chat.id,
         message_id=msg.reply_to_message.message_id,
-        text=msg.reply_to_message.text or msg.reply_to_message.caption
+        text=text
     )
 
     await add_poll_variant(dto, container.dao.polls, container.dao.poll_variants)
