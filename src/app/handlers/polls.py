@@ -1,3 +1,5 @@
+from textwrap import dedent
+
 from aiogram.types import Message
 
 from app.features.polls import (
@@ -21,7 +23,8 @@ from app.infrastructure.dto.poll import (
 
 async def on_polls_command(msg: Message, container: AppContainer) -> None:
     parts = msg.text.split(" ")
-    if len(parts) < 1:
+    if len(parts) <= 1:
+        await on_polls_help(msg)
         return
     action = parts[1]
     match action:
@@ -30,6 +33,29 @@ async def on_polls_command(msg: Message, container: AppContainer) -> None:
         case "remove": await on_poll_delete_command(msg, container)
         case "variants": await on_poll_variants_command(msg, container)
         case "post": await on_poll_post_command(msg, container)
+
+
+async def on_polls_help(msg: Message) -> None:
+    text = dedent("""
+    Этот модуль позволяет создавать пользовательские опросы, в которые каждый может добавлять свои варианты.
+    
+    *Команды*:
+    - `/polls create <Название опроса>` - cоздаст опрос с именем "Название опроса".
+    - `/polls list` - выведет список опросов для этого чата.
+    - `/polls remove <id>` - удалит опрос с номером `<id>`.
+    - `/polls post <id>` - запостит опрос с номером `<id>` как обычный Telegram-опрос.
+    - `/polls variants add <poll_id>` - добавит вариант в опрос с номером `<poll_id>`. Нужно использовать как ответ на сообщение, которое вы хотите добавить в опрос.
+    - `/poll variants list <poll_id>` - покажет варианты для опроса с номером `<poll_id>`.
+    - `/poll variants remove <poll_id> <variant_id>` - удалит вариант опроса `<variant_id>` у опроса `<poll_id>`.
+    
+    *Пошаговый пример использования*:
+    - Создаете опрос командой `/polls create лучшие котики`.
+    - Находите его номер через `/polls list` (допустим это 1).
+    - Постите котика и добавляете к нему подпись.
+    - Отвечаете на картинку с котиком командой `/polls variants add 1`.
+    - Постите сам опрос - `/polls post 1`.
+    """)
+    await msg.reply(text, parse_mode="Markdown")
 
 async def on_poll_post_command(msg: Message, container: AppContainer) -> None:
 
