@@ -45,8 +45,8 @@ async def on_polls_help(msg: Message) -> None:
     - `/polls remove <id>` - удалит опрос с номером `<id>`.
     - `/polls post <id>` - запостит опрос с номером `<id>` как обычный Telegram-опрос.
     - `/polls variants add <poll_id>` - добавит вариант в опрос с номером `<poll_id>`. Нужно использовать как ответ на сообщение, которое вы хотите добавить в опрос.
-    - `/poll variants list <poll_id>` - покажет варианты для опроса с номером `<poll_id>`.
-    - `/poll variants remove <poll_id> <variant_id>` - удалит вариант опроса `<variant_id>` у опроса `<poll_id>`.
+    - `/polls variants list <poll_id>` - покажет варианты для опроса с номером `<poll_id>`.
+    - `/polls variants remove <poll_id> <variant_id>` - удалит вариант опроса `<variant_id>` у опроса `<poll_id>`.
     
     *Пошаговый пример использования*:
     - Создаете опрос командой `/polls create лучшие котики`.
@@ -62,7 +62,7 @@ async def on_poll_post_command(msg: Message, container: AppContainer) -> None:
     try:
         _, _, poll_id = msg.text.split(" ", 2)
     except ValueError:
-        await msg.reply("Использование: /poll post `<id>`", parse_mode="Markdown")
+        await msg.reply("Использование: /polls post `<id>`", parse_mode="Markdown")
         return
 
     await post_poll(
@@ -77,7 +77,7 @@ async def on_poll_create_command(msg: Message, container: AppContainer) -> None:
     try:
         _, _, name = msg.text.split(" ", 2)
     except ValueError:
-        await msg.reply("Использование: /poll create `<название опроса>`", parse_mode="Markdown")
+        await msg.reply("Использование: /polls create `<название опроса>`", parse_mode="Markdown")
         return
 
     await create_poll(CreatePollDTO(msg.from_user.id, msg.chat.id, name), container.dao.polls)
@@ -91,7 +91,7 @@ async def on_poll_delete_command(msg: Message, container: AppContainer) -> None:
     try:
         _, _, poll_id = msg.text.split(" ", 2)
     except ValueError:
-        await msg.reply("Использование: /poll remove `<id>`", parse_mode="Markdown")
+        await msg.reply("Использование: /polls remove `<id>`", parse_mode="Markdown")
         return
 
     try:
@@ -111,7 +111,6 @@ async def on_poll_delete_command(msg: Message, container: AppContainer) -> None:
 async def on_poll_variants_command(msg: Message, container: AppContainer) -> None:
     parts = msg.text.split(" ")
     if len(parts) == 2:
-        await msg.reply("Список: add, list, remove")
         return
     action = parts[2]
     match action:
@@ -123,7 +122,7 @@ async def on_poll_variants_add(msg: Message, container: AppContainer) -> None:
     try:
         _, _, _, poll_id = msg.text.split(" ", 3)
     except ValueError:
-        await msg.reply("Использование: /poll variants add `<poll_id>`", parse_mode="Markdown")
+        await msg.reply("Использование: /polls variants add `<poll_id>`", parse_mode="Markdown")
         return
 
     if not msg.reply_to_message:
@@ -150,7 +149,7 @@ async def on_poll_variants_list(msg: Message, container: AppContainer) -> None:
     try:
         _, _, _, poll_id = msg.text.split(" ", 3)
     except ValueError:
-        await msg.reply("Использование: /poll variants list `<poll_id>`", parse_mode="Markdown")
+        await msg.reply("Использование: /polls variants list `<poll_id>`", parse_mode="Markdown")
         return
 
     text = await get_poll_variants(
@@ -164,7 +163,7 @@ async def on_poll_variant_remove(msg: Message, container: AppContainer) -> None:
     try:
         _, _, _, poll_id, variant_id = msg.text.split(" ", 4)
     except ValueError:
-        await msg.reply("Использование: /poll variants remove `<poll_id>` `<variant_id>`", parse_mode="Markdown")
+        await msg.reply("Использование: /polls variants remove `<poll_id>` `<variant_id>`", parse_mode="Markdown")
         return
 
     await msg.reply(await remove_poll_variant(
