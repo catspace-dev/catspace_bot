@@ -6,6 +6,7 @@ from app.features.polls import (
     remove_poll,
     add_poll_variant,
     get_poll_variants,
+    remove_poll_variant,
 )
 from app.infrastructure.container import AppContainer
 from app.infrastructure.dto.poll import (
@@ -13,6 +14,7 @@ from app.infrastructure.dto.poll import (
     DeletePollDTO,
     AddPollVariantDTO,
     PollFilterDTO,
+    PollVariantFilterDTO,
 )
 
 
@@ -71,7 +73,7 @@ async def on_poll_variants_command(msg: Message, container: AppContainer) -> Non
     match action:
         case "add": await on_poll_variants_add(msg, container)
         case "list": await on_poll_variants_list(msg, container)
-        case "remove": print("removing todo")
+        case "remove": await on_poll_variant_remove(msg, container)
 
 async def on_poll_variants_add(msg: Message, container: AppContainer) -> None:
     try:
@@ -112,5 +114,18 @@ async def on_poll_variants_list(msg: Message, container: AppContainer) -> None:
         poll_variant_dao=container.dao.poll_variants
     )
     await msg.reply(text)
+
+async def on_poll_variant_remove(msg: Message, container: AppContainer) -> None:
+    try:
+        _, _, _, poll_id, variant_id = msg.text.split(" ", 4)
+    except ValueError:
+        await msg.reply("Использование: /poll variants remove `<poll_id>` `<variant_id>`", parse_mode="Markdown")
+        return
+
+    await msg.reply(await remove_poll_variant(
+        dto=PollVariantFilterDTO(variant_id=variant_id, chat_id=msg.chat.id, poll_id=poll_id),
+        poll_dao=container.dao.polls,
+        poll_variant_dao=container.dao.poll_variants
+    ))
 
 

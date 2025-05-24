@@ -50,3 +50,13 @@ class PollVariantDTO:
 
     def to_link(self):
         return f'<a href="https://t.me/c/{self.chat_id}/{self.message_id}">{self.text}</a>'
+
+
+@dataclass
+class PollVariantFilterDTO:
+    variant_id: int
+    poll_id: int
+    chat_id: int
+
+    def to_poll_filter(self) -> PollFilterDTO:
+        return PollFilterDTO(poll_id=self.poll_id, chat_id=self.chat_id)

@@ -8,3 +8,7 @@ class PollDoesNotExist(AppException):
 class YouCantDeletePollWhichNotBelongToYou(AppException):
     def __init__(self):
         super().__init__("Вы не можете удалить опрос который вам не принадлежит.")
+
+class PollVariantDoesNotExist(AppException):
+    def __init__(self):
+        super().__init__("Такого варианта в опросе не существует.")

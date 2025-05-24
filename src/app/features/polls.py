@@ -6,10 +6,13 @@ from app.infrastructure.dto.poll import (
     PollFilterDTO,
     AddPollVariantDTO,
     PollDTO,
+    PollVariantFilterDTO,
+    PollVariantDTO,
 )
 from app.infrastructure.exceptions.polls import (
     PollDoesNotExist,
     YouCantDeletePollWhichNotBelongToYou,
+    PollVariantDoesNotExist,
 )
 
 
@@ -56,3 +59,20 @@ async def get_poll_variants(dto: PollFilterDTO, poll_dao: PollDAO, poll_variant_
     for variant in variants:
         result += f"- {variant.to_link()} ({variant.id})\n"
     return result
+
+async def get_poll_variant(dto: PollVariantFilterDTO, dao: PollVariantDAO) -> PollVariantDTO | None:
+    variant = await dao.get(dto)
+    if not variant:
+        raise PollVariantDoesNotExist()
+    return variant
+
+async def remove_poll_variant(
+    dto: PollVariantFilterDTO,
+    poll_dao: PollDAO,
+    poll_variant_dao: PollVariantDAO
+) -> str:
+    poll = await get_poll(dto=dto.to_poll_filter(), dao=poll_dao)
+    variant = await get_poll_variant(dto=dto, dao=poll_variant_dao)
+    await poll_variant_dao.delete(variant.id)
+    await poll_variant_dao.db.connection.commit()
+    return f"Вариант {variant.to_link()} в опросе {poll.name} удалён."
