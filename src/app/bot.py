@@ -2,6 +2,8 @@ import asyncio
 import logging
 from typing import cast
 
+import sentry_sdk
+from sentry_sdk.integrations.asyncio import AsyncioIntegration
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.storage.memory import MemoryStorage
@@ -10,7 +12,7 @@ from app.handlers import prepare_router
 from app.infrastructure.container import AppContainer
 from app.infrastructure.middleware.chat import ChatWhitelistMiddleware
 from app.infrastructure.middleware.user import UserMiddleware
-from app.settings import TELEGRAM_BOT_TOKEN, ALLOWED_CHATS
+from app.settings import TELEGRAM_BOT_TOKEN, ALLOWED_CHATS, SENTRY_DSN
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -34,6 +36,15 @@ async def on_shutdown(dispatcher: Dispatcher) -> None:
 
 
 async def main() -> None:
+    if SENTRY_DSN:
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            environment="production",
+            integrations=[
+                AsyncioIntegration(),
+            ],
+        )
+
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
     dp.startup.register(on_startup)

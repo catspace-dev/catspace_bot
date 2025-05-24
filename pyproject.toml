@@ -12,6 +12,7 @@ transformers = "^4.41.2"
 torch = "^2.3.1"
 aiosqlite = "^0.20.0"
 yoyo-migrations = "^9.0.0"
+sentry-sdk = "^2.29.1"
 
 
 [build-system]
