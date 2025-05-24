@@ -49,7 +49,7 @@ class PollVariantDTO:
     text: str
 
     def to_link(self):
-        return f'<a href="https://t.me/c/{self.chat_id}/{self.message_id}">{self.text}</a>'
+        return f'<a href="https://t.me/c/{abs(self.chat_id + 1_000_000_000_000)}/{self.message_id}">{self.text}</a>'
 
 
 @dataclass
