@@ -38,3 +38,12 @@ class AddPollVariantDTO:
     chat_id: int
     message_id: int
     text: str
+
+@dataclass
+class PollVariantDTO:
+    id: int
+    poll_id: int
+    user_id: int
+    chat_id: int
+    message_id: int
+    text: str
