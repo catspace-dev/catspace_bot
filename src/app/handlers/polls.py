@@ -7,6 +7,7 @@ from app.features.polls import (
     add_poll_variant,
     get_poll_variants,
     remove_poll_variant,
+    post_poll,
 )
 from app.infrastructure.container import AppContainer
 from app.infrastructure.dto.poll import (
@@ -28,6 +29,23 @@ async def on_polls_command(msg: Message, container: AppContainer) -> None:
         case "list": await on_poll_list_command(msg, container)
         case "remove": await on_poll_delete_command(msg, container)
         case "variants": await on_poll_variants_command(msg, container)
+        case "post": await on_poll_post_command(msg, container)
+
+async def on_poll_post_command(msg: Message, container: AppContainer) -> None:
+
+    try:
+        _, _, poll_id = msg.text.split(" ", 2)
+    except ValueError:
+        await msg.reply("Использование: /poll post `<id>`", parse_mode="Markdown")
+        return
+
+    await post_poll(
+        dto=PollFilterDTO(poll_id=poll_id, chat_id=msg.chat.id),
+        poll_dao=container.dao.polls,
+        poll_variant_dao=container.dao.poll_variants,
+        bot=msg.bot,
+    )
+
 
 async def on_poll_create_command(msg: Message, container: AppContainer) -> None:
     try:

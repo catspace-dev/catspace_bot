@@ -1,3 +1,6 @@
+from aiogram import Bot
+from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton
+
 from app.infrastructure.dao.polls.poll import PollDAO
 from app.infrastructure.dao.polls.poll_variant import PollVariantDAO
 from app.infrastructure.dto.poll import (
@@ -45,7 +48,7 @@ async def remove_poll(dto: DeletePollDTO, dao: PollDAO) -> str:
         raise YouCantDeletePollWhichNotBelongToYou()
     await dao.delete(filter_dto)
     await dao.db.connection.commit()
-    return "Опрос удалён!"
+    return f"Опрос {poll.name} удалён!"
 
 async def add_poll_variant(dto: AddPollVariantDTO, poll_dao: PollDAO, poll_variant_dao: PollVariantDAO) -> None:
     await get_poll(PollFilterDTO(poll_id=dto.poll_id, chat_id=dto.chat_id), poll_dao)
@@ -59,7 +62,7 @@ async def get_poll_variants(dto: PollFilterDTO, poll_dao: PollDAO, poll_variant_
         return f'В опросе "{poll.name}" нет вариантов!'
     result = f'Варианты опроса "{poll.name}": \n'
     for variant in variants:
-        result += f"- {variant.to_link()} ({variant.id})\n"
+        result += f"- {variant.to_html_link()} ({variant.id})\n"
     return result
 
 async def get_poll_variant(dto: PollVariantFilterDTO, dao: PollVariantDAO) -> PollVariantDTO | None:
@@ -80,4 +83,25 @@ async def remove_poll_variant(
         raise YouCantDeletePollVariantWhichNotBelongToYou()
     await poll_variant_dao.delete(variant.id)
     await poll_variant_dao.db.connection.commit()
-    return f"Вариант {variant.to_link()} в опросе {poll.name} удалён."
+    return f"Вариант {variant.to_html_link()} в опросе {poll.name} удалён."
+
+async def post_poll(dto: PollFilterDTO, poll_dao: PollDAO, poll_variant_dao: PollVariantDAO, bot: Bot):
+    poll = await get_poll(dto=dto, dao=poll_dao)
+    variants = await poll_variant_dao.list(chat_id=dto.chat_id, poll_id=poll.id)
+
+    kb = InlineKeyboardBuilder(
+        markup=[
+            [InlineKeyboardButton(text=variant.text, url=variant.to_link())]
+            for variant in variants
+        ]
+    )
+
+    await bot.send_poll(
+        chat_id=poll.chat_id,
+        question=poll.name,
+        allows_multiple_answers=True,
+        options=[variant.text for variant in variants],
+        reply_markup=kb.as_markup(),
+        is_anonymous=False,
+        type="regular"
+    )
