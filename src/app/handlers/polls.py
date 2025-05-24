@@ -1,8 +1,19 @@
 from aiogram.types import Message
 
-from app.features.polls import create_poll, get_poll_list, remove_poll, add_poll_variant
+from app.features.polls import (
+    create_poll,
+    get_poll_list,
+    remove_poll,
+    add_poll_variant,
+    get_poll_variants,
+)
 from app.infrastructure.container import AppContainer
-from app.infrastructure.dto.poll import CreatePollDTO, DeletePollDTO, AddPollVariantDTO
+from app.infrastructure.dto.poll import (
+    CreatePollDTO,
+    DeletePollDTO,
+    AddPollVariantDTO,
+    PollFilterDTO,
+)
 
 
 async def on_polls_command(msg: Message, container: AppContainer) -> None:
@@ -59,7 +70,7 @@ async def on_poll_variants_command(msg: Message, container: AppContainer) -> Non
     action = parts[2]
     match action:
         case "add": await on_poll_variants_add(msg, container)
-        case "list": print("listing todo")
+        case "list": await on_poll_variants_list(msg, container)
         case "remove": print("removing todo")
 
 async def on_poll_variants_add(msg: Message, container: AppContainer) -> None:
@@ -86,5 +97,20 @@ async def on_poll_variants_add(msg: Message, container: AppContainer) -> None:
     await add_poll_variant(dto, container.dao.polls, container.dao.poll_variants)
     await msg.reply("Вариант добавлен!")
     return
+
+async def on_poll_variants_list(msg: Message, container: AppContainer) -> None:
+
+    try:
+        _, _, _, poll_id = msg.text.split(" ", 3)
+    except ValueError:
+        await msg.reply("Использование: /poll variants list `<poll_id>`", parse_mode="Markdown")
+        return
+
+    text = await get_poll_variants(
+        dto=PollFilterDTO(poll_id=poll_id, chat_id=msg.chat.id),
+        poll_dao=container.dao.polls,
+        poll_variant_dao=container.dao.poll_variants
+    )
+    await msg.reply(text)
 
 

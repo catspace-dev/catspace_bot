@@ -46,3 +46,13 @@ async def add_poll_variant(dto: AddPollVariantDTO, poll_dao: PollDAO, poll_varia
     await get_poll(PollFilterDTO(poll_id=dto.poll_id, chat_id=dto.chat_id), poll_dao)
     await poll_variant_dao.add(dto)
     await poll_variant_dao.db.connection.commit()
+
+async def get_poll_variants(dto: PollFilterDTO, poll_dao: PollDAO, poll_variant_dao: PollVariantDAO) -> str:
+    poll = await get_poll(dto=dto, dao=poll_dao)
+    variants = await poll_variant_dao.list(chat_id=dto.chat_id, poll_id=dto.poll_id)
+    if not len(variants):
+        return f'В опросе "{poll.name}" нет вариантов!'
+    result = f'Варианты опроса "{poll.name}": \n'
+    for variant in variants:
+        result += f"- {variant.to_link()} ({variant.id})\n"
+    return result

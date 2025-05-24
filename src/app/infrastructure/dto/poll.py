@@ -47,3 +47,6 @@ class PollVariantDTO:
     chat_id: int
     message_id: int
     text: str
+
+    def to_link(self):
+        return f'<a href="https://t.me/c/{self.chat_id}/{self.message_id}">{self.text}</a>'

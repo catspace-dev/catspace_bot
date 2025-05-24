@@ -1,4 +1,5 @@
 from textwrap import dedent
+from typing import Iterable
 
 from app.infrastructure.dao import BaseDAO
 from app.infrastructure.dto.poll import AddPollVariantDTO, PollVariantDTO
@@ -14,7 +15,7 @@ class PollVariantDAO(BaseDAO):
             (dto.poll_id, dto.user_id, dto.chat_id, dto.message_id, dto.text),
         )
 
-    async def list(self, chat_id: int, poll_id: int):
+    async def list(self, chat_id: int, poll_id: int) -> Iterable[PollVariantDTO]:
         query = dedent("""
             SELECT 
                 id, poll_id, user_id, chat_id, message_id, text
